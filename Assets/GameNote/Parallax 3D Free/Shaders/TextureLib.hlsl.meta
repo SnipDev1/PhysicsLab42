@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a30c9c1802e02874487c3a3304d6aa23
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 375026
+  packageName: Parallax 3D Free
+  packageVersion: 1.0
+  assetPath: Assets/GameNote/Parallax 3D Free/Shaders/TextureLib.hlsl
+  uploadId: 961930

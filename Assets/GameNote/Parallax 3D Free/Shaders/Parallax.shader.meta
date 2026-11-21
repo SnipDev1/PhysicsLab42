@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 6ca92b6da6fdbae4c86f1537e7c41aba
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _MainTex: {instanceID: 0}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 375026
+  packageName: Parallax 3D Free
+  packageVersion: 1.0
+  assetPath: Assets/GameNote/Parallax 3D Free/Shaders/Parallax.shader
+  uploadId: 961930

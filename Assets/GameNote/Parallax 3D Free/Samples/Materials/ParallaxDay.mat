@@ -1,0 +1,79 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ParallaxDay
+  m_Shader: {fileID: 4800000, guid: 6ca92b6da6fdbae4c86f1537e7c41aba, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: c58927ef12294a0f599956d861deb385, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _CenterOffset: 0
+    - _Cull: 2
+    - _DecodeRGBM: 0
+    - _FrontAlpha: 1
+    - _FrontDist: 0
+    - _FrontScale: 1
+    - _FrontSubTex: 0
+    - _GammaToLinear: 0
+    - _Mid1Alpha: 1
+    - _Mid1Dist: 0.19
+    - _Mid1Scale: 1
+    - _Mid1SubTex: 6
+    - _Mid2Alpha: 0
+    - _Mid2Dist: 0.25
+    - _Mid2Scale: 1
+    - _Mid2SubTex: 2
+    - _Mid3Alpha: 0
+    - _Mid3Dist: 0.6
+    - _Mid3Scale: 1
+    - _Mid3SubTex: 8
+    - _PlasticAlpha: 0.017
+    - _PlasticBlur: 0.835
+    - _PlasticDist: 0.05
+    - _PlasticFresnel: 0.5
+    - _PlasticGrain: 0
+    - _PlasticGrainScale: 60
+    - _PlasticRoughness: 0.437
+    - _PlasticSpecular: 0.6
+    - _RoomAlpha: 1
+    - _RoomDepth: 0.42
+    - _WindowDepth: -0.5
+    - _ZWrite: 1
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _FrontColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FrontOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _Mid1Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Mid1Offset: {r: 0, g: 0, b: 0, a: 0}
+    - _Mid2Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Mid2Offset: {r: 0, g: 0, b: 0, a: 0}
+    - _Mid3Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Mid3Offset: {r: 0, g: 0, b: 0, a: 0}
+    - _PlasticColor: {r: 0.92, g: 0.95, b: 1, a: 1}
+    - _RoomColor: {r: 1, g: 1, b: 1, a: 1}
+    - _RoomOffset: {r: 0, g: 0, b: 0, a: 0}
+    - _RoomScale: {r: 1, g: 1, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

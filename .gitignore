@@ -1,0 +1,70 @@
+# Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emory[Cc]aptures/
+[Uu]ser[Ss]ettings/
+
+# Asset Store tools
+/[Aa]ssets/AssetStoreTools*
+
+# Plastic SCM
+/Assets/Plugins/PlasticSCM*
+
+# IDE / OS
+.vs/
+.vscode/
+.idea/
+.gradle/
+.DS_Store*
+Thumbs.db
+Desktop.ini
+[Ee]xported[Oo]bj/
+.consulo/
+
+# C# project files
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+sysinfo.txt
+crashlytics-build.properties
+
+# Build outputs
+*.apk
+*.aab
+*.app
+*.unitypackage
+~UnityDirMonSyncFile~*
+
+# Addressables
+**/Assets/AddressableAssetsData/*/*.bin*
+**/Assets/StreamingAssets/aa.meta
+**/Assets/StreamingAssets/*/aa/*
+
+# Large zip archives in project root (game builds)
+*.zip
+
+# Compiled game builds (keep only source)
+/32BIT/
+/gamever1/
+/GOTOVO_K_POKAZY_30_12_25/
+/testBUILD_web/
+/web_gotovo_k_pokazy_30_12_25/
