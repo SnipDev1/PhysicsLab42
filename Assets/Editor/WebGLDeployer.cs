@@ -12,21 +12,28 @@ using Debug = UnityEngine.Debug;
 public class WebGLDeployer : EditorWindow
 {
     private const string TargetBranch = "gh-pages";
+    private const string TokenPrefKey = "WebGLDeployer_GitHubToken";
     private static string _statusMessage = "";
     private static bool _isDeploying = false;
+    private string _tokenInput = "";
 
     [MenuItem("Build/🚀 Build and Deploy WebGL to GitHub Pages", false, 1)]
     public static void BuildAndDeploy()
     {
-        ExecuteDeploy(interactive: true);
+        ExecuteDeploy(interactive: true, rebuild: true);
     }
 
     [MenuItem("Build/WebGL Deploy Window", false, 2)]
     public static void ShowWindow()
     {
         var window = GetWindow<WebGLDeployer>("WebGL Deploy");
-        window.minSize = new Vector2(420, 260);
+        window.minSize = new Vector2(460, 360);
         window.Show();
+    }
+
+    private void OnEnable()
+    {
+        _tokenInput = EditorPrefs.GetString(TokenPrefKey, "");
     }
 
     private void OnGUI()
@@ -53,12 +60,47 @@ public class WebGLDeployer : EditorWindow
         EditorGUILayout.LabelField("Target Branch:", TargetBranch);
         EditorGUILayout.LabelField("Live Game URL:", string.IsNullOrEmpty(pagesUrl) ? "(unknown)" : pagesUrl);
 
+        GUILayout.Space(10);
+        EditorGUILayout.LabelField("GitHub Authentication (Personal Access Token)", EditorStyles.boldLabel);
+
+        EditorGUILayout.BeginHorizontal();
+        _tokenInput = EditorGUILayout.PasswordField("GitHub Token:", _tokenInput);
+        if (GUILayout.Button("Save", GUILayout.Width(60)))
+        {
+            EditorPrefs.SetString(TokenPrefKey, _tokenInput.Trim());
+            GUI.FocusControl(null);
+            _statusMessage = "Токен сохранён!";
+        }
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.HelpBox(
+            "Для пуша в GitHub нужен токен (PAT) с галочкой 'repo'. Обычный пароль аккаунта GitHub не принимает.",
+            MessageType.None
+        );
+
+        if (GUILayout.Button("🔑 Create Token on GitHub (opens pre-filled link)"))
+        {
+            Application.OpenURL("https://github.com/settings/tokens/new?scopes=repo&description=UnityDeploy");
+        }
+
         GUILayout.Space(15);
         GUI.enabled = !_isDeploying && !string.IsNullOrEmpty(remoteUrl);
 
-        if (GUILayout.Button("🚀 Build & Deploy to GitHub Pages", GUILayout.Height(42)))
+        string buildPath = Path.Combine(Directory.GetCurrentDirectory(), "Builds", "WebGL");
+        bool hasExistingBuild = File.Exists(Path.Combine(buildPath, "index.html"));
+
+        if (GUILayout.Button("🚀 Build & Deploy to GitHub Pages", GUILayout.Height(38)))
         {
-            ExecuteDeploy(interactive: true);
+            ExecuteDeploy(interactive: true, rebuild: true);
+        }
+
+        if (hasExistingBuild)
+        {
+            GUILayout.Space(5);
+            if (GUILayout.Button("⚡ Push Existing Build to GitHub Pages (Fast)", GUILayout.Height(30)))
+            {
+                ExecuteDeploy(interactive: true, rebuild: false);
+            }
         }
 
         GUI.enabled = true;
@@ -79,7 +121,7 @@ public class WebGLDeployer : EditorWindow
         }
     }
 
-    public static void ExecuteDeploy(bool interactive)
+    public static void ExecuteDeploy(bool interactive, bool rebuild)
     {
         if (_isDeploying)
         {
@@ -91,7 +133,7 @@ public class WebGLDeployer : EditorWindow
         SelfCheck();
 
         bool webglSupported = BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.WebGL, BuildTarget.WebGL);
-        if (!webglSupported)
+        if (rebuild && !webglSupported)
         {
             string err = "Модуль WebGL Build Support не установлен для этой версии Unity!\n\n" +
                          "Установите его через Unity Hub:\n" +
@@ -111,6 +153,17 @@ public class WebGLDeployer : EditorWindow
             return;
         }
 
+        string token = EditorPrefs.GetString(TokenPrefKey, "").Trim();
+        if (string.IsNullOrEmpty(token) && remoteUrl.StartsWith("https://"))
+        {
+            ShowWindow();
+            string msg = "Для первой отправки на GitHub укажите Personal Access Token (PAT) в окне WebGL Deploy.\n\n" +
+                         "Нажмите кнопку 'Create Token on GitHub' в окне, создайте токен с галочкой 'repo' и вставьте его.";
+            _statusMessage = msg;
+            if (interactive) EditorUtility.DisplayDialog("GitHub Token Required", msg, "OK");
+            return;
+        }
+
         string pagesUrl = GetGitHubPagesUrl(remoteUrl);
         string projectPath = Directory.GetCurrentDirectory();
         string buildPath = Path.Combine(projectPath, "Builds", "WebGL");
@@ -120,7 +173,7 @@ public class WebGLDeployer : EditorWindow
             .Select(s => s.path)
             .ToArray();
 
-        if (scenes.Length == 0)
+        if (rebuild && scenes.Length == 0)
         {
             string err = "No enabled scenes found in EditorBuildSettings. Please add scenes to Build Settings.";
             _statusMessage = err;
@@ -129,49 +182,60 @@ public class WebGLDeployer : EditorWindow
         }
 
         _isDeploying = true;
-        _statusMessage = "Building WebGL...";
 
         try
         {
-            // Configure WebGL player settings for seamless GitHub Pages hosting
-            PlayerSettings.WebGL.decompressionFallback = true;
-            AssetDatabase.SaveAssets();
-
-            if (Directory.Exists(buildPath))
+            if (rebuild)
             {
-                Directory.Delete(buildPath, true);
+                _statusMessage = "Building WebGL...";
+
+                // Configure WebGL player settings for seamless GitHub Pages hosting
+                PlayerSettings.WebGL.decompressionFallback = true;
+                AssetDatabase.SaveAssets();
+
+                if (Directory.Exists(buildPath))
+                {
+                    Directory.Delete(buildPath, true);
+                }
+                Directory.CreateDirectory(buildPath);
+
+                var options = new BuildPlayerOptions
+                {
+                    scenes = scenes,
+                    locationPathName = buildPath,
+                    target = BuildTarget.WebGL,
+                    options = BuildOptions.None
+                };
+
+                Debug.Log($"[WebGLDeployer] Starting WebGL build to: {buildPath}");
+                BuildReport report = BuildPipeline.BuildPlayer(options);
+
+                if (report.summary.result != BuildResult.Succeeded || !File.Exists(Path.Combine(buildPath, "index.html")))
+                {
+                    string err = "WebGL build failed or did not produce index.html. Check Console for errors.";
+                    _statusMessage = err;
+                    Debug.LogError($"[WebGLDeployer] {err}");
+                    if (interactive) EditorUtility.DisplayDialog("Build Error", err, "OK");
+                    return;
+                }
+
+                Debug.Log("[WebGLDeployer] WebGL build succeeded. Preparing deployment...");
             }
-            Directory.CreateDirectory(buildPath);
 
-            // Execute WebGL build
-            var options = new BuildPlayerOptions
-            {
-                scenes = scenes,
-                locationPathName = buildPath,
-                target = BuildTarget.WebGL,
-                options = BuildOptions.None
-            };
-
-            Debug.Log($"[WebGLDeployer] Starting WebGL build to: {buildPath}");
-            BuildReport report = BuildPipeline.BuildPlayer(options);
-
-            if (report.summary.result != BuildResult.Succeeded || !File.Exists(Path.Combine(buildPath, "index.html")))
-            {
-                string err = "WebGL build failed or did not produce index.html. Check Console for errors.";
-                _statusMessage = err;
-                Debug.LogError($"[WebGLDeployer] {err}");
-                if (interactive) EditorUtility.DisplayDialog("Build Error", err, "OK");
-                return;
-            }
-
-            Debug.Log("[WebGLDeployer] WebGL build succeeded. Preparing deployment...");
             _statusMessage = "Pushing build to GitHub...";
 
             // Create .nojekyll so GitHub Pages correctly serves Unity files (e.g. wasm, data)
             File.WriteAllText(Path.Combine(buildPath, ".nojekyll"), "");
 
+            // Build push URL with token if available
+            string pushUrl = remoteUrl;
+            if (!string.IsNullOrEmpty(token) && remoteUrl.StartsWith("https://"))
+            {
+                pushUrl = remoteUrl.Replace("https://", $"https://{token}@");
+            }
+
             // shortcut: uses git push -f directly from the build folder into gh-pages branch, upgrade to GitHub Actions if team branch protection is enforced
-            DeployBuildFolder(buildPath, remoteUrl);
+            DeployBuildFolder(buildPath, pushUrl);
 
             _statusMessage = $"Deployed to '{TargetBranch}'! Available at: {pagesUrl}";
             Debug.Log($"[WebGLDeployer] {_statusMessage}");
@@ -195,9 +259,10 @@ public class WebGLDeployer : EditorWindow
         }
         catch (Exception ex)
         {
-            _statusMessage = $"Error: {ex.Message}";
-            Debug.LogException(ex);
-            if (interactive) EditorUtility.DisplayDialog("Deploy Failed", ex.Message, "OK");
+            string sanitizedMsg = MaskToken(ex.Message, token);
+            _statusMessage = $"Error: {sanitizedMsg}";
+            Debug.LogError($"[WebGLDeployer] {sanitizedMsg}");
+            if (interactive) EditorUtility.DisplayDialog("Deploy Failed", sanitizedMsg, "OK");
         }
         finally
         {
@@ -205,7 +270,7 @@ public class WebGLDeployer : EditorWindow
         }
     }
 
-    private static void DeployBuildFolder(string buildPath, string remoteUrl)
+    private static void DeployBuildFolder(string buildPath, string pushUrl)
     {
         string gitDir = Path.Combine(buildPath, ".git");
         try
@@ -215,17 +280,8 @@ public class WebGLDeployer : EditorWindow
             RunGit(buildPath, "add -A");
             string commitMessage = $"Deploy WebGL build - {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC";
             RunGit(buildPath, $"commit -m \"{commitMessage}\"");
-            RunGit(buildPath, $"remote add origin \"{remoteUrl}\"");
+            RunGit(buildPath, $"remote add origin \"{pushUrl}\"");
             RunGit(buildPath, $"push -f origin {TargetBranch}");
-        }
-        catch (Exception ex) when (ex.Message.Contains("Authentication failed") || ex.Message.Contains("Invalid username or token"))
-        {
-            throw new InvalidOperationException(
-                "Ошибка авторизации Git на GitHub!\n\n" +
-                "GitHub отключил вход по обычному паролю через Git. Нужен токен (PAT) или SSH-ключ.\n\n" +
-                "Подробности смотрите в чате.",
-                ex
-            );
         }
         finally
         {
@@ -233,7 +289,6 @@ public class WebGLDeployer : EditorWindow
             {
                 try
                 {
-                    // Clean up nested .git to avoid submodule warnings in the workspace
                     RemoveDirectoryReadOnly(gitDir);
                 }
                 catch (Exception cleanupEx)
@@ -305,16 +360,23 @@ public class WebGLDeployer : EditorWindow
         directory.Delete(true);
     }
 
+    private static string MaskToken(string text, string token)
+    {
+        if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(text)) return text;
+        return text.Replace(token, "ghp_***");
+    }
+
     private static void SelfCheck()
     {
-        // Assert URL parsing handles HTTPS and SSH remote formats
         string httpsTest = GetGitHubPagesUrl("https://github.com/SnipDev1/PhysicsLab42.git");
         Debug.Assert(httpsTest == "https://SnipDev1.github.io/PhysicsLab42/", $"SelfCheck failed on HTTPS: {httpsTest}");
 
         string sshTest = GetGitHubPagesUrl("git@github.com:SnipDev1/PhysicsLab42.git");
         Debug.Assert(sshTest == "https://SnipDev1.github.io/PhysicsLab42/", $"SelfCheck failed on SSH: {sshTest}");
 
-        // Assert git CLI is available
+        string masked = MaskToken("https://ghp_secretToken123@github.com", "ghp_secretToken123");
+        Debug.Assert(masked == "https://ghp_***@github.com", "MaskToken failed");
+
         string gitVer = RunGit(Directory.GetCurrentDirectory(), "--version");
         Debug.Assert(!string.IsNullOrEmpty(gitVer) && gitVer.StartsWith("git version"), "SelfCheck git CLI missing");
     }
