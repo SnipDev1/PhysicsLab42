@@ -35,6 +35,17 @@ public class WebGLDeployer : EditorWindow
         GUILayout.Label("WebGL GitHub Pages Deployer", EditorStyles.boldLabel);
         GUILayout.Space(5);
 
+        bool webglSupported = BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.WebGL, BuildTarget.WebGL);
+        if (!webglSupported)
+        {
+            EditorGUILayout.HelpBox(
+                "Модуль WebGL Build Support не установлен для этой версии Unity!\n\n" +
+                "Установите его через Unity Hub:\n" +
+                "Installs -> 6000.3.27f1 -> ⋮ (три точки) -> Add modules -> Web Build Support.",
+                MessageType.Error
+            );
+        }
+
         string remoteUrl = GetRemoteOriginUrl();
         string pagesUrl = GetGitHubPagesUrl(remoteUrl);
 
@@ -78,6 +89,18 @@ public class WebGLDeployer : EditorWindow
 
         // Run self-check assertions before proceeding
         SelfCheck();
+
+        bool webglSupported = BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.WebGL, BuildTarget.WebGL);
+        if (!webglSupported)
+        {
+            string err = "Модуль WebGL Build Support не установлен для этой версии Unity!\n\n" +
+                         "Установите его через Unity Hub:\n" +
+                         "Installs -> 6000.3.27f1 -> ⋮ (три точки) -> Add modules -> Web Build Support.";
+            _statusMessage = err;
+            Debug.LogError($"[WebGLDeployer] {err}");
+            if (interactive) EditorUtility.DisplayDialog("WebGL Module Missing", err, "OK");
+            return;
+        }
 
         string remoteUrl = GetRemoteOriginUrl();
         if (string.IsNullOrEmpty(remoteUrl))
@@ -132,9 +155,9 @@ public class WebGLDeployer : EditorWindow
             Debug.Log($"[WebGLDeployer] Starting WebGL build to: {buildPath}");
             BuildReport report = BuildPipeline.BuildPlayer(options);
 
-            if (report.summary.result != BuildResult.Succeeded)
+            if (report.summary.result != BuildResult.Succeeded || !File.Exists(Path.Combine(buildPath, "index.html")))
             {
-                string err = $"WebGL build failed: {report.summary.result}. Check Console for errors.";
+                string err = "WebGL build failed or did not produce index.html. Check Console for errors.";
                 _statusMessage = err;
                 Debug.LogError($"[WebGLDeployer] {err}");
                 if (interactive) EditorUtility.DisplayDialog("Build Error", err, "OK");
@@ -194,6 +217,15 @@ public class WebGLDeployer : EditorWindow
             RunGit(buildPath, $"commit -m \"{commitMessage}\"");
             RunGit(buildPath, $"remote add origin \"{remoteUrl}\"");
             RunGit(buildPath, $"push -f origin {TargetBranch}");
+        }
+        catch (Exception ex) when (ex.Message.Contains("Authentication failed") || ex.Message.Contains("Invalid username or token"))
+        {
+            throw new InvalidOperationException(
+                "Ошибка авторизации Git на GitHub!\n\n" +
+                "GitHub отключил вход по обычному паролю через Git. Нужен токен (PAT) или SSH-ключ.\n\n" +
+                "Подробности смотрите в чате.",
+                ex
+            );
         }
         finally
         {
