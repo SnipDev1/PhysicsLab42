@@ -30,7 +30,7 @@ namespace Player
 
         private void Update()
         {
-            if (_playerCamera == null || ExitButton.IsPaused || HelpPanelController.IsOpen || LabTutorialController.IsModalOpen) return;
+            if (_playerCamera == null || ExitButton.IsPaused || HelpPanelController.IsOpen || LabTutorialController.IsModalOpen || DevMenuController.IsOpen) return;
 
             bool zooming = Input.GetMouseButton(1);
             HandleCameraAdjustments(zooming);
@@ -38,7 +38,7 @@ namespace Player
             float targetFov = zooming ? _zoomFov : _normalFov;
             _playerCamera.fieldOfView = Mathf.Lerp(_playerCamera.fieldOfView, targetFov, Time.deltaTime * _zoomSpeed);
 
-            if (RotaryKnob.IsAnyKnobDragging || RotaryKnob2.IsAnyKnobDragging) return;
+            if (RotaryKnob.IsAnyKnobDragging) return;
 
             float zoomScale = _playerCamera.fieldOfView / _normalFov;
             Vector2 mouseDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));

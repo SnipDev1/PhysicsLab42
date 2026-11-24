@@ -77,8 +77,8 @@ public class SplashScreenController : MonoBehaviour
 
         if (_promptTmp != null)
         {
-            Color c = MainMenuUiFactory.TextSecondary;
-            c.a = 0.55f + 0.45f * (0.5f + 0.5f * Mathf.Sin(_elapsed * 3.2f));
+            Color c = MainMenuUiFactory.AccentColor;
+            c.a = 0.70f + 0.30f * (0.5f + 0.5f * Mathf.Sin(_elapsed * 3.5f));
             _promptTmp.color = c;
         }
 
@@ -156,16 +156,9 @@ public class SplashScreenController : MonoBehaviour
             "Лабораторная работа № 42. Исследование свойств фоторезистора",
             27f, FontStyles.Bold, MainMenuUiFactory.AccentColor, TextAlignmentOptions.Center);
 
-        AddSpacer(card, 28f);
-        BuildFormulaBand(card);
-        AddSpacer(card, 16f);
-
-        MainMenuUiFactory.CreateText(
-            card, "SplashProcessCaption",
-            "Внутренний фотоэффект в полупроводнике (CdSe)  •  Стенд С3-ОК01",
-            21f, FontStyles.Normal, MainMenuUiFactory.TextSecondary, TextAlignmentOptions.Center);
-
-        AddSpacer(card, 28f);
+        AddSpacer(card, 24f);
+        BuildAuthorsSection(card);
+        AddSpacer(card, 24f);
         MainMenuUiFactory.CreateDivider(card, 2f);
 
         var flexSpacer = new GameObject("FlexSpacer", typeof(RectTransform), typeof(LayoutElement));
@@ -175,7 +168,7 @@ public class SplashScreenController : MonoBehaviour
         _promptTmp = MainMenuUiFactory.CreateText(
             card, "ContinuePrompt",
             "Нажмите любую клавишу или кликните мышью для продолжения...",
-            20f, FontStyles.Italic, MainMenuUiFactory.TextSecondary, TextAlignmentOptions.Center);
+            24f, FontStyles.Bold, MainMenuUiFactory.AccentColor, TextAlignmentOptions.Center);
     }
 
     private static void BuildLogoSection(RectTransform card)
@@ -216,23 +209,30 @@ public class SplashScreenController : MonoBehaviour
         raw.raycastTarget = false;
     }
 
-    private static void BuildFormulaBand(RectTransform card)
+    private static void BuildAuthorsSection(RectTransform card)
     {
         RectTransform band = MainMenuUiFactory.CreatePanel(
-            card, "FormulaBand", new Color(0.95f, 0.96f, 0.99f, 1f), false, false);
+            card, "AuthorsBand", new Color(0.95f, 0.96f, 0.99f, 1f), false, false);
         var bandLe = band.gameObject.AddComponent<LayoutElement>();
-        bandLe.minHeight = 94f;
-        bandLe.preferredHeight = 94f;
+        bandLe.minHeight = 154f;
+        bandLe.preferredHeight = 154f;
 
-        var tmp = MainMenuUiFactory.CreateText(
-            band, "FormulaText",
-            "I<sub>с</sub> = I<sub>т</sub> + I<sub>ф</sub>     •     hν<sub>0</sub> = hc / λ<sub>0</sub> = ΔE",
-            36f, FontStyles.Bold, MainMenuUiFactory.AccentColor, TextAlignmentOptions.Center);
-        RectTransform tmpRt = tmp.rectTransform;
-        tmpRt.anchorMin = Vector2.zero;
-        tmpRt.anchorMax = Vector2.one;
-        tmpRt.offsetMin = new Vector2(20f, 8f);
-        tmpRt.offsetMax = new Vector2(-20f, -8f);
+        var vl = band.gameObject.AddComponent<VerticalLayoutGroup>();
+        vl.padding = new RectOffset(28, 28, 14, 14);
+        vl.spacing = 6f;
+        vl.childAlignment = TextAnchor.MiddleCenter;
+        vl.childControlWidth = true;
+        vl.childControlHeight = true;
+
+        MainMenuUiFactory.CreateText(
+            band, "StudentsText",
+            "Смородников Дмитрий ПМ-53\nПриц Иван ПМ-53\nЧерных Егор ПМИ-53",
+            21f, FontStyles.Bold, MainMenuUiFactory.TextPrimary, TextAlignmentOptions.Center);
+
+        MainMenuUiFactory.CreateText(
+            band, "SupervisorText",
+            "Руководитель Баранов А.В., кафедра ОФ НГТУ",
+            19f, FontStyles.Normal, MainMenuUiFactory.AccentColor, TextAlignmentOptions.Center);
     }
 
     private static void AddSpacer(RectTransform parent, float height)

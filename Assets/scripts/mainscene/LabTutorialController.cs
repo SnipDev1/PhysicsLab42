@@ -316,10 +316,10 @@ public class LabTutorialController : MonoBehaviour
             case 7:
             {
                 bool jOk = _lab.baseCurrentIo >= 0.35f;
-                bool noOverload = !_lab.IsAmpOverloaded;
+                bool limit200 = Mathf.Approximately(_lab.ampRange, 200f);
                 checklist = $"{FmtCheck(jOk)} Задать J/J0 >= 0.35 (сейчас {_lab.baseCurrentIo:0.000})\n" +
-                            $"{FmtCheck(noOverload)} Убрать перегрузку пределом 200 ({_lab.ampRange:0})";
-                stepDone = jOk && noOverload;
+                            $"{FmtCheck(limit200)} Выбрать предел амперметра 200 ({_lab.ampRange:0})";
+                stepDone = jOk && limit200;
                 break;
             }
             case 8:

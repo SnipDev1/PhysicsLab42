@@ -10,10 +10,13 @@ public class OpenPDF : MonoBehaviour
     public static void OpenLab42Pdf(string fileName = "labs.pdf")
     {
         if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            Application.OpenURL(Application.streamingAssetsPath + "/" + fileName);
             return;
+        }
 
         string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
         if (File.Exists(filePath))
-            Application.OpenURL("file://" + filePath);
+            Application.OpenURL("file:///" + filePath.Replace('\\', '/').TrimStart('/'));
     }
 }

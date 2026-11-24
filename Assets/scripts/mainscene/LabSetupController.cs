@@ -610,14 +610,15 @@ public class LabSetupController : MonoBehaviour
             return;
         }
 
-        IsVoltmeterConnected = (ufWires.Same(2, 6) && ufWires.Same(3, 7))
-                            || (ufWires.Same(2, 7) && ufWires.Same(3, 6))
-                            || (ufWires.Same(2, 0) && ufWires.Same(3, 1))
-                            || (ufWires.Same(2, 1) && ufWires.Same(3, 0));
+        bool directIps = (ufWires.Same(2, 0) && ufWires.Same(3, 1))
+                      || (ufWires.Same(2, 1) && ufWires.Same(3, 0));
+        bool photoBridge = (ufWires.Same(2, 6) && ufWires.Same(3, 7))
+                        || (ufWires.Same(2, 7) && ufWires.Same(3, 6));
 
         if (ufWires.Same(6, 7) || ufWires.Same(4, 5))
         {
             IsPhotoCircuitConnected = false;
+            IsVoltmeterConnected = directIps;
             return;
         }
 
@@ -644,6 +645,7 @@ public class LabSetupController : MonoBehaviour
         }
 
         IsPhotoCircuitConnected = seriesConnected;
+        IsVoltmeterConnected = directIps || (photoBridge && seriesConnected);
     }
 
     private void ClearPortSelection()
@@ -1049,6 +1051,16 @@ public class LabSetupController : MonoBehaviour
             Destroy(_wireBaseMat);
             _wireBaseMat = null;
         }
+    }
+
+    public bool CloseOpenPanels()
+    {
+        bool hadOpen = _showHelp || _showControls;
+        _showHelp = false;
+        _showControls = false;
+        if (_quickHelpGo != null) _quickHelpGo.SetActive(false);
+        if (_controlsGo != null) _controlsGo.SetActive(false);
+        return hadOpen;
     }
 
     public void ToggleQuickHelpPanel()

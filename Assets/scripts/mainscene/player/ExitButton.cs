@@ -27,9 +27,18 @@ public class ExitButton : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            if (DevMenuController.IsOpen)
+            {
+                DevMenuController.CloseActive();
+                return;
+            }
             if (HelpPanelController.IsOpen)
             {
                 HelpPanelController.CloseActive();
+                return;
+            }
+            if (LabSetupController.Instance != null && LabSetupController.Instance.CloseOpenPanels())
+            {
                 return;
             }
             if (IsPaused)
@@ -57,7 +66,7 @@ public class ExitButton : MonoBehaviour
         Time.timeScale = 1f;
         if (pauseMenuRoot != null)
             pauseMenuRoot.SetActive(false);
-        if (!LabTutorialController.IsModalOpen)
+        if (!LabTutorialController.IsModalOpen && !DevMenuController.IsOpen)
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;

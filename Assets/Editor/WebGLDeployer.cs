@@ -15,7 +15,7 @@ public class WebGLDeployer : EditorWindow
     private const string TokenPrefKey = "WebGLDeployer_GitHubToken";
     private static string _statusMessage = "";
     private static bool _isDeploying = false;
-    private string _tokenInput = "";
+    private static string _tokenInput = "";
 
     [MenuItem("Build/🚀 Build and Deploy WebGL to GitHub Pages", false, 1)]
     public static void BuildAndDeploy()
@@ -64,7 +64,12 @@ public class WebGLDeployer : EditorWindow
         EditorGUILayout.LabelField("GitHub Authentication (Personal Access Token)", EditorStyles.boldLabel);
 
         EditorGUILayout.BeginHorizontal();
-        _tokenInput = EditorGUILayout.PasswordField("GitHub Token:", _tokenInput);
+        string input = EditorGUILayout.PasswordField("GitHub Token:", _tokenInput);
+        if (input != _tokenInput)
+        {
+            _tokenInput = input;
+            EditorPrefs.SetString(TokenPrefKey, _tokenInput.Trim());
+        }
         if (GUILayout.Button("Save", GUILayout.Width(60)))
         {
             EditorPrefs.SetString(TokenPrefKey, _tokenInput.Trim());
@@ -154,6 +159,11 @@ public class WebGLDeployer : EditorWindow
         }
 
         string token = EditorPrefs.GetString(TokenPrefKey, "").Trim();
+        if (string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(_tokenInput))
+        {
+            token = _tokenInput.Trim();
+            EditorPrefs.SetString(TokenPrefKey, token);
+        }
         if (string.IsNullOrEmpty(token) && remoteUrl.StartsWith("https://"))
         {
             ShowWindow();
