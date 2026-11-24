@@ -157,4 +157,171 @@ public static class MainMenuUiFactory
         le.preferredHeight = height;
         return rt;
     }
+
+    public static Slider CreateSlider(
+        Transform parent,
+        string name,
+        float minValue,
+        float maxValue,
+        float initialValue,
+        UnityAction<float> onValueChanged)
+    {
+        var sliderGo = new GameObject(name, typeof(RectTransform), typeof(Slider));
+        var sliderRt = sliderGo.GetComponent<RectTransform>();
+        sliderRt.SetParent(parent, false);
+
+        var slider = sliderGo.GetComponent<Slider>();
+        slider.direction = Slider.Direction.LeftToRight;
+        slider.minValue = minValue;
+        slider.maxValue = maxValue;
+        slider.wholeNumbers = false;
+
+        var bgRt = CreatePanel(sliderRt, "Background", new Color(0f, 0f, 0f, 0.12f), false, true);
+        bgRt.anchorMin = new Vector2(0f, 0.35f);
+        bgRt.anchorMax = new Vector2(1f, 0.65f);
+        bgRt.offsetMin = Vector2.zero;
+        bgRt.offsetMax = Vector2.zero;
+
+        var fillAreaGo = new GameObject("Fill Area", typeof(RectTransform));
+        var fillAreaRt = fillAreaGo.GetComponent<RectTransform>();
+        fillAreaRt.SetParent(sliderRt, false);
+        fillAreaRt.anchorMin = new Vector2(0f, 0.35f);
+        fillAreaRt.anchorMax = new Vector2(1f, 0.65f);
+        fillAreaRt.offsetMin = Vector2.zero;
+        fillAreaRt.offsetMax = Vector2.zero;
+
+        var fillRt = CreatePanel(fillAreaRt, "Fill", AccentColor, false, false);
+        fillRt.anchorMin = Vector2.zero;
+        fillRt.anchorMax = Vector2.one;
+        fillRt.offsetMin = Vector2.zero;
+        fillRt.offsetMax = Vector2.zero;
+
+        var handleAreaGo = new GameObject("Handle Slide Area", typeof(RectTransform));
+        var handleAreaRt = handleAreaGo.GetComponent<RectTransform>();
+        handleAreaRt.SetParent(sliderRt, false);
+        handleAreaRt.anchorMin = Vector2.zero;
+        handleAreaRt.anchorMax = Vector2.one;
+        handleAreaRt.offsetMin = new Vector2(12f, 0f);
+        handleAreaRt.offsetMax = new Vector2(-12f, 0f);
+
+        var handleRt = CreatePanel(handleAreaRt, "Handle", Color.white, true, true);
+        handleRt.sizeDelta = new Vector2(24f, 24f);
+
+        slider.fillRect = fillRt;
+        slider.handleRect = handleRt;
+        slider.targetGraphic = handleRt.GetComponent<Image>();
+        slider.colors = new ColorBlock
+        {
+            normalColor = Color.white,
+            highlightedColor = new Color(0.92f, 0.94f, 1f),
+            pressedColor = new Color(0.78f, 0.85f, 1f),
+            selectedColor = Color.white,
+            disabledColor = new Color(0.7f, 0.7f, 0.7f, 0.5f),
+            colorMultiplier = 1f,
+            fadeDuration = 0.08f
+        };
+
+        slider.value = initialValue;
+        if (onValueChanged != null)
+            slider.onValueChanged.AddListener(onValueChanged);
+
+        return slider;
+    }
+
+    public static (Slider slider, TextMeshProUGUI valueText) CreateSliderRow(
+        Transform parent,
+        string name,
+        string label,
+        float minValue,
+        float maxValue,
+        float step,
+        float initialValue,
+        string valueFormat,
+        UnityAction<float> onValueChanged)
+    {
+        var rowGo = new GameObject(name, typeof(RectTransform), typeof(VerticalLayoutGroup));
+        var rowRt = rowGo.GetComponent<RectTransform>();
+        rowRt.SetParent(parent, false);
+
+        var vl = rowGo.GetComponent<VerticalLayoutGroup>();
+        vl.padding = new RectOffset(0, 0, 0, 0);
+        vl.spacing = 6f;
+        vl.childControlWidth = true;
+        vl.childControlHeight = true;
+        vl.childForceExpandWidth = true;
+        vl.childForceExpandHeight = false;
+
+        var topGo = new GameObject("TopLine", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+        var topRt = topGo.GetComponent<RectTransform>();
+        topRt.SetParent(rowRt, false);
+        var hlTop = topGo.GetComponent<HorizontalLayoutGroup>();
+        hlTop.childControlWidth = true;
+        hlTop.childControlHeight = true;
+        hlTop.childForceExpandWidth = false;
+        hlTop.childForceExpandHeight = false;
+
+        var lbl = CreateText(topRt, "Label", label, 19f, FontStyles.Bold, TextPrimary, TextAlignmentOptions.MidlineLeft);
+        var lblLe = lbl.gameObject.AddComponent<LayoutElement>();
+        lblLe.flexibleWidth = 1f;
+
+        var valTmp = CreateText(topRt, "Value", string.Format(valueFormat, initialValue), 19f, FontStyles.Bold, AccentColor, TextAlignmentOptions.MidlineRight);
+        var valLe = valTmp.gameObject.AddComponent<LayoutElement>();
+        valLe.preferredWidth = 100f;
+
+        var controlsGo = new GameObject("ControlsLine", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+        var controlsRt = controlsGo.GetComponent<RectTransform>();
+        controlsRt.SetParent(rowRt, false);
+        var hlControls = controlsGo.GetComponent<HorizontalLayoutGroup>();
+        hlControls.spacing = 10f;
+        hlControls.childAlignment = TextAnchor.MiddleCenter;
+        hlControls.childControlWidth = true;
+        hlControls.childControlHeight = true;
+        hlControls.childForceExpandWidth = false;
+        hlControls.childForceExpandHeight = false;
+
+        var rowLe = rowGo.AddComponent<LayoutElement>();
+        rowLe.preferredHeight = 72f;
+
+        Slider slider = null;
+
+        Button minusBtn = CreateButton(controlsRt, "MinusBtn", "−", 20f, null, true, TextPrimary);
+        var minusLe = minusBtn.gameObject.AddComponent<LayoutElement>();
+        minusLe.preferredWidth = 44f;
+        minusLe.preferredHeight = 34f;
+
+        var sliderContainer = new GameObject("SliderContainer", typeof(RectTransform));
+        var scRt = sliderContainer.GetComponent<RectTransform>();
+        scRt.SetParent(controlsRt, false);
+        var scLe = sliderContainer.AddComponent<LayoutElement>();
+        scLe.flexibleWidth = 1f;
+        scLe.preferredHeight = 34f;
+
+        slider = CreateSlider(scRt, "Slider", minValue, maxValue, initialValue, (val) =>
+        {
+            valTmp.text = string.Format(valueFormat, val);
+            onValueChanged?.Invoke(val);
+        });
+        var sRt = slider.GetComponent<RectTransform>();
+        sRt.anchorMin = Vector2.zero;
+        sRt.anchorMax = Vector2.one;
+        sRt.offsetMin = Vector2.zero;
+        sRt.offsetMax = Vector2.zero;
+
+        Button plusBtn = CreateButton(controlsRt, "PlusBtn", "+", 20f, null, true, TextPrimary);
+        var plusLe = plusBtn.gameObject.AddComponent<LayoutElement>();
+        plusLe.preferredWidth = 44f;
+        plusLe.preferredHeight = 34f;
+
+        minusBtn.onClick.AddListener(() =>
+        {
+            slider.value = Mathf.Clamp(slider.value - step, minValue, maxValue);
+        });
+
+        plusBtn.onClick.AddListener(() =>
+        {
+            slider.value = Mathf.Clamp(slider.value + step, minValue, maxValue);
+        });
+
+        return (slider, valTmp);
+    }
 }

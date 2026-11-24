@@ -88,7 +88,7 @@ public class LabTutorialController : MonoBehaviour
         if (_cam == null)
             _cam = LabSetupController.GetMainCamera();
 
-        bool pausedOrHelp = ExitButton.IsPaused || HelpPanelController.IsOpen;
+        bool pausedOrHelp = ExitButton.IsPaused || HelpPanelController.IsOpen || SettingsPanelController.IsOpen;
 
         if (_panelRoot != null)
         {

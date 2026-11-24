@@ -282,6 +282,18 @@
       window.addEventListener("resize", updateCanvasSize);
       updateCanvasSize();
 
+      // Prevent browser default zoom shortcuts (Ctrl/Cmd + Plus/Minus/0/Wheel)
+      window.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && (e.key === "+" || e.key === "-" || e.key === "=" || e.key === "_" || e.code === "NumpadAdd" || e.code === "NumpadSubtract")) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+      window.addEventListener("wheel", (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+
       const buildUrl = "Build";
       const loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
       const config = {

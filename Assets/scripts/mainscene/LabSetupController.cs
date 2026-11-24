@@ -191,7 +191,7 @@ public class LabSetupController : MonoBehaviour
 
     void Update()
     {
-        bool modalBlocked = ExitButton.IsPaused || HelpPanelController.IsOpen || LabTutorialController.IsModalOpen;
+        bool modalBlocked = ExitButton.IsPaused || HelpPanelController.IsOpen || LabTutorialController.IsModalOpen || SettingsPanelController.IsOpen;
         if (_reticleGo != null && _reticleGo.activeSelf == modalBlocked)
             _reticleGo.SetActive(!modalBlocked);
         if (_hudRoot != null && _hudRoot.activeSelf == modalBlocked)
@@ -1207,14 +1207,12 @@ public class LabSetupController : MonoBehaviour
             "• Мышь — осмотр лабораторного стенда\n" +
             "• [ПКМ] (удерживать) — лупа (приближение)\n" +
             "• [+] / [−] — высота камеры\n" +
-            "• [Shift + +/-] — угол обзора камеры\n" +
-            "• [ПКМ + +/-] или колёсико в лупе — зум лупы\n" +
-            "• [Ctrl + +/-] или [ / ] — чувствительность мыши\n" +
             "• [ЛКМ] по клеммам — подключить / снять провод\n" +
             "• [ЛКМ] по кнопкам — питание, пределы и выбор λ\n" +
             "• [ЛКМ тянуть] или [Колёсико] по ручкам — настройка U и J/J0\n" +
             "• [Tab] / [H] — открыть / закрыть памятку\n" +
             "• [I] — открыть / закрыть это окно\n" +
+            "• [O] — настройки камеры (FOV и чувствительность)\n" +
             "• [Enter] / [B] — навигация по шагам (в обучении)\n" +
             "• [Esc] — меню паузы и справка";
 

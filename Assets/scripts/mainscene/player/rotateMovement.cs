@@ -15,6 +15,32 @@ namespace Player
         private Camera _playerCamera;
         private Vector2 _rotation;
 
+        private void Awake()
+        {
+            ApplySettings();
+        }
+
+        private void OnEnable()
+        {
+            GameSettings.OnChanged += ApplySettings;
+        }
+
+        private void OnDisable()
+        {
+            GameSettings.OnChanged -= ApplySettings;
+        }
+
+        public void ApplySettings()
+        {
+            _normalFov = GameSettings.Fov;
+            _rotateSpeed = GameSettings.Sensitivity;
+            _zoomFov = GameSettings.ZoomFov;
+            if (_playerCamera != null && !Input.GetMouseButton(1))
+            {
+                _playerCamera.fieldOfView = _normalFov;
+            }
+        }
+
         private void Start()
         {
             _playerCamera = GetComponentInChildren<Camera>();
@@ -23,6 +49,7 @@ namespace Player
                 Vector3 euler = _playerCamera.transform.localEulerAngles;
                 float pitch = euler.x > 180f ? euler.x - 360f : euler.x;
                 _rotation = new Vector2(pitch, euler.y);
+                _playerCamera.fieldOfView = _normalFov;
             }
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -30,7 +57,7 @@ namespace Player
 
         private void Update()
         {
-            if (_playerCamera == null || ExitButton.IsPaused || HelpPanelController.IsOpen || LabTutorialController.IsModalOpen || DevMenuController.IsOpen) return;
+            if (_playerCamera == null || ExitButton.IsPaused || HelpPanelController.IsOpen || LabTutorialController.IsModalOpen || DevMenuController.IsOpen || SettingsPanelController.IsOpen) return;
 
             bool zooming = Input.GetMouseButton(1);
             HandleCameraAdjustments(zooming);
@@ -55,34 +82,12 @@ namespace Player
             bool minusDown = Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus);
             bool plusHeld = Input.GetKey(KeyCode.Equals) || Input.GetKey(KeyCode.Plus) || Input.GetKey(KeyCode.KeypadPlus);
             bool minusHeld = Input.GetKey(KeyCode.Minus) || Input.GetKey(KeyCode.KeypadMinus);
-            bool leftBracket = Input.GetKeyDown(KeyCode.LeftBracket);
-            bool rightBracket = Input.GetKeyDown(KeyCode.RightBracket);
-            bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             bool ctrlHeld = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
-            if ((ctrlHeld && (plusDown || minusDown)) || leftBracket || rightBracket)
-            {
-                float dir = ((ctrlHeld && plusDown) || rightBracket) ? 1f : -1f;
-                _rotateSpeed = Mathf.Clamp(_rotateSpeed + dir * 15f, 15f, 300f);
-                LabSetupController.Instance?.ShowCameraStatus(
-                    $"Чувствительность камеры: {_rotateSpeed:0}  ([+/-] высота, [Ctrl + +/-] скорость, [Shift + +/-] зум)");
-            }
-            else if (zooming && (plusDown || minusDown))
-            {
-                float dir = plusDown ? 1f : -1f;
-                _zoomFov = Mathf.Clamp(_zoomFov - dir * 3f, 14f, 40f);
-                LabSetupController.Instance?.ShowCameraStatus(
-                    $"Зум лупы (FOV): {_zoomFov:0}°  ([+/-] высота, [ПКМ + +/-] лупа, [Shift + +/-] обзор)");
-            }
-            else if (shiftHeld && (plusDown || minusDown))
-            {
-                float dir = plusDown ? 1f : -1f;
-                _normalFov = Mathf.Clamp(_normalFov - dir * 5f, 25f, 75f);
-                _zoomFov = Mathf.Clamp(_zoomFov - dir * 3f, 14f, 40f);
-                LabSetupController.Instance?.ShowCameraStatus(
-                    $"Угол обзора камеры (FOV): {_normalFov:0}°  ([+/-] высота, [Shift + +/-] зум, [Ctrl + +/-] скорость)");
-            }
-            else if (!zooming && !shiftHeld && !ctrlHeld && (plusHeld || minusHeld || plusDown || minusDown))
+            // In browser, Ctrl + +/- triggers browser zoom. We ignore +/- if Ctrl is held.
+            // Height adjustment is kept on +/- keys without Ctrl modifier.
+            // FOV and camera sensitivity are configured in the Settings menu ([O] or Pause menu).
+            if (!ctrlHeld && (plusHeld || minusHeld || plusDown || minusDown))
             {
                 float dir = (plusHeld || plusDown) ? 1f : -1f;
                 float deltaY = dir * _heightSpeed * Time.deltaTime + ((plusDown || minusDown) ? dir * 0.04f : 0f);
@@ -90,12 +95,13 @@ namespace Player
                 pos.y = Mathf.Clamp(pos.y + deltaY, _minHeight, _maxHeight);
                 transform.position = pos;
                 LabSetupController.Instance?.ShowCameraStatus(
-                    $"Высота камеры: {pos.y:0.00} м  ([+/-] высота, [Shift + +/-] зум, [Ctrl + +/-] скорость)");
+                    $"Высота камеры: {pos.y:0.00} м  ([+] / [−])");
             }
 
             if (zooming && LabSetupController.HoveredObject == null && Mathf.Abs(Input.mouseScrollDelta.y) > 0.01f)
             {
                 _zoomFov = Mathf.Clamp(_zoomFov - Input.mouseScrollDelta.y * 2f, 14f, 40f);
+                GameSettings.ZoomFov = _zoomFov;
                 LabSetupController.Instance?.ShowCameraStatus($"Зум лупы (FOV): {_zoomFov:0}°");
             }
         }

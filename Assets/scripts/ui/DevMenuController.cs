@@ -121,7 +121,7 @@ public class DevMenuController : MonoBehaviour
 
         string activeScene = SceneManager.GetActiveScene().name;
         if ((activeScene == "SampleScene" || activeScene == "TutorialScene") &&
-            !ExitButton.IsPaused && !HelpPanelController.IsOpen && !LabTutorialController.IsModalOpen)
+            !ExitButton.IsPaused && !HelpPanelController.IsOpen && !SettingsPanelController.IsOpen && !LabTutorialController.IsModalOpen)
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;

@@ -64,6 +64,40 @@ public class LabPhysicsTests
         }
     }
 
+    [Test]
+    public void GameSettings_ClampsAndResets_Correctly()
+    {
+        GameSettings.ResetToDefaults();
+        Assert.AreEqual(GameSettings.DefaultFov, GameSettings.Fov, 0.01f);
+        Assert.AreEqual(GameSettings.DefaultSens, GameSettings.Sensitivity, 0.01f);
+        Assert.AreEqual(GameSettings.DefaultZoomFov, GameSettings.ZoomFov, 0.01f);
+
+        // Clamp checks
+        GameSettings.Fov = 10f;
+        Assert.AreEqual(GameSettings.MinFov, GameSettings.Fov, 0.01f);
+        GameSettings.Fov = 150f;
+        Assert.AreEqual(GameSettings.MaxFov, GameSettings.Fov, 0.01f);
+
+        GameSettings.Sensitivity = 5f;
+        Assert.AreEqual(GameSettings.MinSens, GameSettings.Sensitivity, 0.01f);
+        GameSettings.Sensitivity = 500f;
+        Assert.AreEqual(GameSettings.MaxSens, GameSettings.Sensitivity, 0.01f);
+
+        bool eventFired = false;
+        System.Action handler = () => eventFired = true;
+        GameSettings.OnChanged += handler;
+        try
+        {
+            GameSettings.Fov = 65f;
+            Assert.IsTrue(eventFired, "OnChanged must fire when FOV is updated");
+        }
+        finally
+        {
+            GameSettings.OnChanged -= handler;
+            GameSettings.ResetToDefaults();
+        }
+    }
+
     [MenuItem("Tests/Run Physics Verification")]
     public static void RunVerificationFromMenu()
     {
@@ -71,6 +105,7 @@ public class LabPhysicsTests
         suite.Wavelengths_HasEightPresets_AndPeakAt565Nm();
         suite.Voltmeter_ReturnsZero_WhenCircuitDisconnected();
         suite.StandardCircuit_EvaluatesCorrectly_AndMeasuresVoltage();
+        suite.GameSettings_ClampsAndResets_Correctly();
         Debug.Log("[LabPhysicsTests] All verification tests passed successfully!");
     }
 }
