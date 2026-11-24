@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -5,7 +6,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Hidden developer menu toggled via [Ctrl + Alt + ]].
-/// Allows instant circuit auto-assembly, wire clearance, and scene navigation.
+/// Active ONLY in Unity Editor; completely stripped out in builds.
 /// </summary>
 public class DevMenuController : MonoBehaviour
 {
@@ -263,3 +264,16 @@ public class DevAutoConnector : MonoBehaviour
         }
     }
 }
+#else
+using UnityEngine;
+
+/// <summary>
+/// Empty stub for player builds (WebGL, Standalone, Mobile).
+/// Excludes dev-menu completely from release builds.
+/// </summary>
+public class DevMenuController : MonoBehaviour
+{
+    public static bool IsOpen => false;
+    public static void CloseActive() { }
+}
+#endif
