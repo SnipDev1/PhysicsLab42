@@ -33,7 +33,7 @@ public class WebGLDeployer : EditorWindow
 
     private void OnEnable()
     {
-        _tokenInput = EditorPrefs.GetString(TokenPrefKey, "");
+        _tokenInput = WindowsReleaseDeployer.GetSavedToken();
     }
 
     private void OnGUI()
@@ -68,11 +68,11 @@ public class WebGLDeployer : EditorWindow
         if (input != _tokenInput)
         {
             _tokenInput = input;
-            EditorPrefs.SetString(TokenPrefKey, _tokenInput.Trim());
+            WindowsReleaseDeployer.SaveToken(_tokenInput);
         }
         if (GUILayout.Button("Save", GUILayout.Width(60)))
         {
-            EditorPrefs.SetString(TokenPrefKey, _tokenInput.Trim());
+            WindowsReleaseDeployer.SaveToken(_tokenInput);
             GUI.FocusControl(null);
             _statusMessage = "Токен сохранён!";
         }
@@ -158,11 +158,11 @@ public class WebGLDeployer : EditorWindow
             return;
         }
 
-        string token = EditorPrefs.GetString(TokenPrefKey, "").Trim();
+        string token = WindowsReleaseDeployer.GetSavedToken();
         if (string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(_tokenInput))
         {
             token = _tokenInput.Trim();
-            EditorPrefs.SetString(TokenPrefKey, token);
+            WindowsReleaseDeployer.SaveToken(token);
         }
         if (string.IsNullOrEmpty(token) && remoteUrl.StartsWith("https://"))
         {

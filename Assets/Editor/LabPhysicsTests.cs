@@ -98,6 +98,35 @@ public class LabPhysicsTests
         }
     }
 
+    [Test]
+    public void WindowsReleaseDeployer_HelpersAndParsers_WorkCorrectly()
+    {
+        // GitHub Repo parser tests
+        Assert.IsTrue(WindowsReleaseDeployer.TryParseGitHubRepo("https://github.com/SnipDev1/PhysicsLab42.git", out string owner1, out string repo1));
+        Assert.AreEqual("SnipDev1", owner1);
+        Assert.AreEqual("PhysicsLab42", repo1);
+
+        Assert.IsTrue(WindowsReleaseDeployer.TryParseGitHubRepo("git@github.com:User/RepoName.git", out string owner2, out string repo2));
+        Assert.AreEqual("User", owner2);
+        Assert.AreEqual("RepoName", repo2);
+
+        Assert.IsFalse(WindowsReleaseDeployer.TryParseGitHubRepo("not-a-github-url", out _, out _));
+
+        // Version bumper tests
+        Assert.AreEqual("v0.0.0.3", WindowsReleaseDeployer.BumpVersion("v0.0.0.2"));
+        Assert.AreEqual("v1.0.1", WindowsReleaseDeployer.BumpVersion("v1.0.0"));
+        Assert.AreEqual("2.1", WindowsReleaseDeployer.BumpVersion("2.0"));
+
+        // JSON response parser tests
+        string sampleJson = "{\"id\": 9876543, \"tag_name\": \"v1.0.0\", \"html_url\": \"https://github.com/SnipDev1/PhysicsLab42/releases/tag/v1.0.0\"}";
+        Assert.AreEqual(9876543, WindowsReleaseDeployer.ParseReleaseId(sampleJson));
+        Assert.AreEqual("https://github.com/SnipDev1/PhysicsLab42/releases/tag/v1.0.0", WindowsReleaseDeployer.ParseHtmlUrl(sampleJson));
+
+        string sampleAssets = "[{\"id\": 112233, \"name\": \"PhysicsLab42-Windows-v1.0.0.zip\"}]";
+        Assert.AreEqual(112233, WindowsReleaseDeployer.ParseExistingAssetId(sampleAssets, "PhysicsLab42-Windows-v1.0.0.zip"));
+        Assert.AreEqual(0, WindowsReleaseDeployer.ParseExistingAssetId(sampleAssets, "NonExistent.zip"));
+    }
+
     [MenuItem("Tests/Run Physics Verification")]
     public static void RunVerificationFromMenu()
     {
@@ -106,6 +135,7 @@ public class LabPhysicsTests
         suite.Voltmeter_ReturnsZero_WhenCircuitDisconnected();
         suite.StandardCircuit_EvaluatesCorrectly_AndMeasuresVoltage();
         suite.GameSettings_ClampsAndResets_Correctly();
+        suite.WindowsReleaseDeployer_HelpersAndParsers_WorkCorrectly();
         Debug.Log("[LabPhysicsTests] All verification tests passed successfully!");
     }
 }
