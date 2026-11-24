@@ -61,6 +61,7 @@ crashlytics-build.properties
 
 # Large zip archives in project root (game builds)
 *.zip
+*.docx
 
 # Compiled game builds (keep only source)
 /32BIT/
