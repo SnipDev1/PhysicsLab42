@@ -159,7 +159,7 @@ public class DevMenuController : MonoBehaviour
         // Header
         MainMenuUiFactory.CreateText(
             card, "DevTitle",
-            "🔧 DEV-MENU (Режим разработчика)",
+            "DEV-MENU (Режим разработчика)",
             28f, FontStyles.Bold, MainMenuUiFactory.AccentColor, TextAlignmentOptions.Center);
 
         MainMenuUiFactory.CreateText(
@@ -170,15 +170,15 @@ public class DevMenuController : MonoBehaviour
         MainMenuUiFactory.CreateDivider(card, 2f);
 
         // Buttons
-        AddActionButton(card, "AutoConnectBtn", "⚡ Включить автосборку схемы (6 проводов)", MainMenuUiFactory.AccentColor, OnAutoConnectClicked);
-        AddActionButton(card, "ClearWiresBtn", "🔌 Разобрать схему (снять все провода)", MainMenuUiFactory.DangerColor, OnClearWiresClicked);
+        AddActionButton(card, "AutoConnectBtn", "Включить автосборку схемы (6 проводов)", MainMenuUiFactory.AccentColor, OnAutoConnectClicked);
+        AddActionButton(card, "ClearWiresBtn", "Разобрать схему (снять все провода)", MainMenuUiFactory.DangerColor, OnClearWiresClicked);
 
         Button toggleBtn = AddActionButton(card, "ToggleAutoStartBtn", "", MainMenuUiFactory.TextPrimary, OnToggleAutoStartClicked);
         _autoStartLabelTmp = toggleBtn.GetComponentInChildren<TextMeshProUGUI>();
 
         MainMenuUiFactory.CreateDivider(card, 1f);
 
-        AddActionButton(card, "SceneSwitchBtn", "🔄 Переключить сцену (Лабораторная / Меню)", MainMenuUiFactory.TextSecondary, OnSwitchSceneClicked);
+        AddActionButton(card, "SceneSwitchBtn", "Переключить сцену (Лабораторная / Меню)", MainMenuUiFactory.TextSecondary, OnSwitchSceneClicked);
         AddActionButton(card, "CloseBtn", "Закрыть [Esc]", MainMenuUiFactory.TextPrimary, Hide);
 
         _root.SetActive(false);
